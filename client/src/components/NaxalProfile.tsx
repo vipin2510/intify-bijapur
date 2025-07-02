@@ -34,7 +34,7 @@ export const NaxalProfile: React.FC = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await axios.get('https://intify-server.vercel.app/api/spreadsheet?name=Naxal+Profile');
+        const response = await axios.get('https://intify-bijapur-server.vercel.app/api/spreadsheet?name=Naxal+Profile');
         const profiles = response.data;
         console.log('Received profiles:', profiles);
 
