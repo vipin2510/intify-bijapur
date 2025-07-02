@@ -2,7 +2,8 @@
 
 export const AUTH_CONFIG = {
     ALLOWED_EMAILS: [
-      "vipingautamooooo16@gmail.com",
+      "vipingautamooooo16@gmail.com","sudsrkrace@gmail.com
+",
       "arvindkishor76@gmail.com","monikamaravi989@gmail.com","ritesh.dsp08@gmail.com","abhishekpainkra@gmail.com"
       ,"asharani92.uranw@gmail.com","rdchandra81.dc@gmail.com","satyasingh8653@gmail.com","Janaksahu2013@gmail.com","test@example.com",
       "sudarshansinghdhruw70@gmail.com","shivkumarabhanpur2903@gmail.com","jaiksahu80@gmail.com"
