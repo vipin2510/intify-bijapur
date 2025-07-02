@@ -24,7 +24,7 @@ export const dmsToDecimal = (dms: string, direction: string): number => {
 };
 
 export const convertGRToDecimal = (gr: string): [number, number] => {
-    let decimal = gr.trim().split("  ");
+    let decimal = gr.trim().split(" ");
     const [lat, lon] = decimal.map(el => parseFloat(el.trim().substring(0, el.length - 2)));
 
     if (!isNaN(lat) && !isNaN(lon)) {

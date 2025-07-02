@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import axios from "axios";
@@ -25,13 +26,16 @@ export const XLS = ({
       );
       const rows = res.data;
       rows.shift();
+
+      if(rows.length === 0 ) return;
+      
       const processedData = rows.map((row:any) => ({
         Date: row[0],
         IntContent: row[2],
         Name: row[4],
         Name_: row[3],
         IntUniqueNo: parseInt(row[1]),
-        GR: row[5],
+        GR: (row[5] as string).split("°").join(""),
         Strength: parseInt(row[8]),
         Source: row[10],
         Type: row[11],
@@ -44,6 +48,7 @@ export const XLS = ({
         Month: parseInt(row[19]),
         UID: row[21],
       }));
+
       setFilteredData(processedData);
       setData(processedData);
       setXlsData(processedData);
