@@ -32,7 +32,7 @@ export const Layer = ({ map, showLayer }: LayerProps) => {
         setSources([]); // Clear the sources state
         map.current.addSource('source-100',{
           type: 'geojson',
-          data: './Geojson/Narayanpur_border.geojson'
+data: '/Geojson/Narayanpur_border.geojson'
         })
         map.current.addLayer({
           id: 'data-100',
