@@ -49,7 +49,7 @@ data: '/Geojson/Narayanpur_border.geojson'
   
           map.current.addSource(sourceId, {
             type: 'geojson',
-            data: `./Geojson/${file}`,
+            data: `/Geojson/${file}`,
           });
   
           map.current.addLayer({
