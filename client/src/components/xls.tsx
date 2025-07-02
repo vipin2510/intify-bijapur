@@ -21,7 +21,7 @@ export const XLS = ({
   useEffect(() => {
     const fetchData = async () => {
       const res = await axios.get(
-        "https://intify-server.vercel.app/api/spreadsheet?name=int+main+sheet",
+        "https://intify-bijapur-server.vercel.app/api/spreadsheet?name=int+main+sheet",
       );
       const rows = res.data;
       rows.shift();
