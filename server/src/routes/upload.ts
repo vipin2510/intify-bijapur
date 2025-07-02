@@ -27,7 +27,7 @@ router
 
         if (!files || files.length === 0) return res.status(404).send("No files uploaded");
 
-        const fileUrls = files.map((file) => `https://intify-server.vercel.app/images/${file.filename}`);
+        const fileUrls = files.map((file) => `https://intify-bijapur-server.vercel.app/images/${file.filename}`);
 
         res.status(200).json({ urls: fileUrls });
     });
