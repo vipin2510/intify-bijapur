@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import axios from "axios";
@@ -8,7 +7,6 @@ import { handleFile } from "@/utils/file-reader";
 
 export const XLS = ({
   showLayer,
-  data,
   setData,
   legend,
   setkmlData,
@@ -19,35 +17,44 @@ export const XLS = ({
 }: XLSProps) => {
   const [filteredData, setFilteredData] = useState<xlsDataType[]>([]);
 
+  function formatGr(value: string): string | undefined {
+    const splitValue = value.trim().split(" ");
+    const replacedValue = splitValue.map((item) => item.replace("°", ""));
+    return replacedValue.join(" ");
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       const res = await axios.get(
-        "https://intify-bijapur-server.vercel.app/api/spreadsheet?name=int+main+sheet",
+        "https://intify-bijapur-server.vercel.app/api/spreadsheet?name=int+main+sheet"
       );
       const rows = res.data;
       rows.shift();
 
-      if(rows.length === 0 ) return;
-      
-      const processedData = rows.map((row:any) => ({
-        Date: row[0],
-        IntContent: row[2],
-        Name: row[4],
-        Name_: row[3],
-        IntUniqueNo: parseInt(row[1]),
-        GR: (row[5] as string).split("°").join(""),
-        Strength: parseInt(row[8]),
-        Source: row[10],
-        Type: row[11],
-        Rank: row[12],
-        AreaCommittee: row[13],
-        District: row[14],
-        PoliceStation: row[15],
-        Division: row[17],
-        Week: parseInt(row[18]),
-        Month: parseInt(row[19]),
-        UID: row[21],
-      }));
+      if (rows.length === 0) return;
+      const processedData = rows
+        .filter((rows: any) => rows[5] && formatGr(rows[5]))
+        .map((row: any) => {
+          return {
+            Date: row[0],
+            IntContent: row[2],
+            Name: row[4],
+            Name_: row[3],
+            IntUniqueNo: parseInt(row[1]),
+            GR: formatGr(row[5]),
+            Strength: parseInt(row[8]),
+            Source: row[10],
+            Type: row[11],
+            Rank: row[12],
+            AreaCommittee: row[13],
+            District: row[14],
+            PoliceStation: row[15],
+            Division: row[17],
+            Week: parseInt(row[18]),
+            Month: parseInt(row[19]),
+            UID: row[21],
+          };
+        });
 
       setFilteredData(processedData);
       setData(processedData);
@@ -57,24 +64,8 @@ export const XLS = ({
   }, [showLayer.marker]);
 
   useEffect(() => {
-    const updateFilteredData = () => {
-      const updatedFilteredData = removeUnknown
-        ? data.filter(
-            (el) =>
-              !Object.values(el).some(
-                (value) => value?.toString().toLowerCase() === "unknown",
-              ),
-          )
-        : data;
-      setFilteredData(updatedFilteredData);
-    };
-
-    updateFilteredData();
-  }, [data, removeUnknown]);
-
-  useEffect(() => {
     const markers: mapboxgl.Marker[] = [];
-    let lineLayerId = 'marker-lines';
+    let lineLayerId = "marker-lines";
 
     const createMarkers = () => {
       setkmlData((_) => []);
@@ -83,9 +74,13 @@ export const XLS = ({
 
       // Group data by coordinates
       const groupedData = filteredData.reduce((acc, el) => {
-        if (el.GR && el.GR.length > 0) {
+        if (el && el.GR && el.GR.length > 0) {
           const coordinates = convertGRToDecimal(el.GR);
-          if (!isNaN(coordinates[0]) && !isNaN(coordinates[1])) {
+          if (
+            coordinates[0].toString().length > 0 &&
+            !isNaN(coordinates[0]) &&
+            !isNaN(coordinates[1])
+          ) {
             const key = `${coordinates[0]},${coordinates[1]}`;
             if (!acc[key]) acc[key] = [];
             acc[key].push(el);
@@ -95,8 +90,9 @@ export const XLS = ({
       }, {} as Record<string, typeof filteredData>);
 
       Object.entries(groupedData).forEach(([key, group]) => {
-        const [lng, lat] = key.split(',').map(Number);
-        const baseCoordinates: [number, number] = [lng, lat];
+        const coords = key.split(",").map(Number);
+
+        const baseCoordinates: [number, number] = [coords[0], coords[1]];
 
         // Create a central marker
         const centralMarkerElement = document.createElement("div");
@@ -127,7 +123,9 @@ export const XLS = ({
           markerElement.appendChild(markerInfo);
 
           const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
-            `<h3>${el["IntUniqueNo" as keyof xlsDataType]}: ${el["IntContent" as keyof xlsDataType]} </h3>
+            `<h3>${el["IntUniqueNo" as keyof xlsDataType]}: ${
+              el["IntContent" as keyof xlsDataType]
+            } </h3>
             <a href="/profile/${el.UID}" target="_blank">View Profile</a>`
           );
 
@@ -142,17 +140,16 @@ export const XLS = ({
 
           // Create a line feature
           const lineFeature: GeoJSON.Feature = {
-            type: 'Feature',
+            type: "Feature",
             geometry: {
-              type: 'LineString',
-              coordinates: [baseCoordinates, [offsetLng, offsetLat]]
+              type: "LineString",
+              coordinates: [baseCoordinates, [offsetLng, offsetLat]],
             },
-            properties: {}
+            properties: {},
           };
           lineFeatures.push(lineFeature);
 
           bounds.extend(baseCoordinates);
-
           const newKmlData = {
             name: el[legend as keyof xlsDataType],
             longitude: offsetLng,
@@ -172,23 +169,22 @@ export const XLS = ({
 
       // Add a custom layer for lines
       map.current.addSource(lineLayerId, {
-        type: 'geojson',
+        type: "geojson",
         data: {
-          type: 'FeatureCollection',
-          features: lineFeatures
-        }
+          type: "FeatureCollection",
+          features: lineFeatures,
+        },
       });
 
       map.current.addLayer({
         id: lineLayerId,
-        type: 'line',
+        type: "line",
         source: lineLayerId,
         paint: {
-          'line-color': '#888',
-          'line-width': 2
-        }
+          "line-color": "#888",
+          "line-width": 2,
+        },
       });
-
       map.current.fitBounds(bounds, { padding: 50 });
     };
 

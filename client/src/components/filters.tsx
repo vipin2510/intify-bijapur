@@ -26,7 +26,7 @@ export const Filters = ({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useOutsideClick(() => setIsDropdownOpen(false));
   const [selectedFilters, setSelectedFilters] = useState<selectedFiltersType>(
-    initialSelectedFilters,
+    initialSelectedFilters
   );
   useEffect(() => {
     setInitialSelectedFilters(selectedFilters);
@@ -50,7 +50,7 @@ export const Filters = ({
 
   useEffect(() => {
     if (xlsData.length > 0) {
-      setFilterLabels(Object.keys(xlsData[0]));
+      if (xlsData[0]) setFilterLabels(Object.keys(xlsData[0]));
     }
   }, [xlsData]);
 
@@ -64,7 +64,7 @@ export const Filters = ({
     const filteredByDate = xlsData.filter((data) => {
       if (data.Date && typeof data.Date === "string") {
         const dataDate = new Date(
-          String(data.Date).split("/").reverse().join("-"),
+          String(data.Date).split("/").reverse().join("-")
         );
 
         if (startDate && endDate) {
@@ -180,7 +180,7 @@ export const Filters = ({
 
   const getSuggestions = (selected: string) => {
     const uniqueValues = Array.from(
-      new Set(xlsData.map((item) => item[selected as keyof xlsDataType])),
+      new Set(xlsData.map((item) => item[selected as keyof xlsDataType]))
     );
     const isNumericField = [
       "Month",
@@ -189,16 +189,14 @@ export const Filters = ({
       "Week",
     ].includes(selected);
     const filteredValues = removeUnknown
-      ? uniqueValues.filter(
-          ((value) => value !== null && value !== "Unknown") ||
-            ((value) => value !== null && value !== "ukn"),
-        )
+      ? uniqueValues.filter((value) => value !== null && value !== "ukn")
       : uniqueValues.filter((value) => value !== null);
 
     return isNumericField
       ? filteredValues.map((value) => (value !== null ? value.toString() : ""))
       : filteredValues.map((value) =>
-          value !== null ? String(value).toLowerCase() : "");
+          value !== null ? String(value).toLowerCase() : ""
+        );
   };
 
   return (
@@ -233,7 +231,7 @@ export const Filters = ({
                   onCheckedChange={(checked) => handleLabels(label, checked)}
                   className={cn(
                     checkFilterIncludes(label) &&
-                      "bg-blue-600 text-white focus:bg-blue-600 focus:text-white focus:bg-opacity-90",
+                      "bg-blue-600 text-white focus:bg-blue-600 focus:text-white focus:bg-opacity-90"
                   )}
                 >
                   {SpacedNamed(label)}
@@ -250,7 +248,7 @@ export const Filters = ({
               onCheckedChange={(checked) => handleLabels("startDate", checked)}
               className={cn(
                 checkFilterIncludes("startDate") &&
-                  "bg-blue-600 text-white focus:bg-blue-600 focus:text-white focus:bg-opacity-90",
+                  "bg-blue-600 text-white focus:bg-blue-600 focus:text-white focus:bg-opacity-90"
               )}
             >
               Start Date
@@ -261,7 +259,7 @@ export const Filters = ({
               onCheckedChange={(checked) => handleLabels("endDate", checked)}
               className={cn(
                 checkFilterIncludes("endDate") &&
-                  "bg-blue-600 text-white focus:bg-blue-600 focus:text-white focus:bg-opacity-90",
+                  "bg-blue-600 text-white focus:bg-blue-600 focus:text-white focus:bg-opacity-90"
               )}
             >
               End Date
@@ -285,7 +283,7 @@ export const Filters = ({
                   onClick={() => setLegend(label)}
                   className={cn(
                     legend === label &&
-                      "bg-blue-600 text-white focus:bg-blue-600 focus:text-white focus:bg-opacity-90",
+                      "bg-blue-600 text-white focus:bg-blue-600 focus:text-white focus:bg-opacity-90"
                   )}
                 >
                   {SpacedNamed(label)}
@@ -318,7 +316,7 @@ export const Filters = ({
                     className="border border-gray-300 rounded-md px-3 py-2"
                   />
                 </>
-              ) :  (
+              ) : (
                 <AutocompleteInput
                   id={selected}
                   label={SpacedNamed(selected)}
