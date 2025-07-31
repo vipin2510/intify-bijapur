@@ -98,7 +98,7 @@ export const Filters = ({
         return dataValue === filterValue;
       });
     });
-
+    console.log(finalData)
     setData(finalData);
   };
   useEffect(() => {

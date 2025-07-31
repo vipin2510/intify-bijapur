@@ -7,6 +7,7 @@ import { handleFile } from "@/utils/file-reader";
 
 export const XLS = ({
   showLayer,
+  data,
   setData,
   legend,
   setkmlData,
@@ -62,6 +63,12 @@ export const XLS = ({
     };
     showLayer.marker && fetchData();
   }, [showLayer.marker]);
+
+  useEffect(()=> {
+    if(data.length > 0){
+      setFilteredData(data);
+    }
+  }, [data])
 
   useEffect(() => {
     const markers: mapboxgl.Marker[] = [];
