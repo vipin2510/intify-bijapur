@@ -64,11 +64,11 @@ export const XLS = ({
     showLayer.marker && fetchData();
   }, [showLayer.marker]);
 
-  useEffect(()=> {
-    if(data.length > 0){
+  useEffect(() => {
+    if (data.length > 0) {
       setFilteredData(data);
     }
-  }, [data])
+  }, [data]);
 
   useEffect(() => {
     const markers: mapboxgl.Marker[] = [];
@@ -98,6 +98,8 @@ export const XLS = ({
 
       Object.entries(groupedData).forEach(([key, group]) => {
         const coords = key.split(",").map(Number);
+        
+        if((coords[0] < -90 || coords[0] > 90) || (coords[0] < -90 || coords[0] > 90)) return;
 
         const baseCoordinates: [number, number] = [coords[0], coords[1]];
 
