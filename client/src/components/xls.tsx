@@ -64,11 +64,25 @@ export const XLS = ({
     showLayer.marker && fetchData();
   }, [showLayer.marker]);
 
+  // 🔹 Filter data based on removeUnknown
   useEffect(() => {
+    const updateFilteredData = () => {
+      const updatedFilteredData = removeUnknown
+        ? data.filter(
+            (el) =>
+              !Object.values(el).some(
+                (value) => value?.toString().toLowerCase() === "unknown"
+              )
+          )
+        : data;
+
+      setFilteredData(updatedFilteredData);
+    };
+
     if (data.length > 0) {
-      setFilteredData(data);
+      updateFilteredData();
     }
-  }, [data]);
+  }, [data, removeUnknown]);
 
   useEffect(() => {
     const markers: mapboxgl.Marker[] = [];
@@ -98,8 +112,14 @@ export const XLS = ({
 
       Object.entries(groupedData).forEach(([key, group]) => {
         const coords = key.split(",").map(Number);
-        
-        if((coords[0] < -90 || coords[0] > 90) || (coords[0] < -90 || coords[0] > 90)) return;
+
+        if (
+          coords[0] < -90 ||
+          coords[0] > 90 ||
+          coords[1] < -180 ||
+          coords[1] > 180
+        )
+          return;
 
         const baseCoordinates: [number, number] = [coords[0], coords[1]];
 
