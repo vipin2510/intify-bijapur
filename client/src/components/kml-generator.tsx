@@ -10,6 +10,7 @@ type KmlGeneratorProps = {
   kmlData: kmlDataType[];
   selectedFilters: Record<string, any>;
   legendName: string;
+  removeUnknown?: boolean; // <-- added
 };
 
 // Escape XML special characters for KML
@@ -27,25 +28,32 @@ const sanitizeFileName = (unsafe: string) => {
   return unsafe.replace(/[^a-zA-Z0-9-_=.]/g, "_");
 };
 
-export const KmlGenerator = ({ kmlData, selectedFilters, legendName }: KmlGeneratorProps) => {
+export const KmlGenerator = ({
+  kmlData,
+  selectedFilters,
+  legendName,
+  removeUnknown = false, // <-- default false
+}: KmlGeneratorProps) => {
   const handleDownloadKML = () => {
     const kml = generateKML(kmlData);
 
     const selectedFiltersString = Object.entries(selectedFilters)
-      .filter(([key]) => key !== 'startDate' && key !== 'endDate') // exclude dates
+      .filter(([key]) => key !== "startDate" && key !== "endDate") // exclude dates
       .map(([key, value]) => `${sanitizeFileName(key)}=${sanitizeFileName(String(value))}`)
-      .join('_');
+      .join("_");
 
     const startDateString = selectedFilters.startDate
       ? `_startDate=${sanitizeFileName(selectedFilters.startDate.toString())}`
-      : '';
+      : "";
     const endDateString = selectedFilters.endDate
       ? `_endDate=${sanitizeFileName(selectedFilters.endDate.toString())}`
-      : '';
+      : "";
 
-    const fileName = `kml_${selectedFiltersString}${startDateString}${endDateString}_legend=${sanitizeFileName(legendName)}.kml`;
+    const fileName = `kml_${selectedFiltersString}${startDateString}${endDateString}_legend=${sanitizeFileName(
+      legendName
+    )}.kml`;
 
-    const blob = new Blob([kml], { type: 'text/plain;charset=utf-8' });
+    const blob = new Blob([kml], { type: "text/plain;charset=utf-8" });
     saveAs(blob, fileName);
   };
 
@@ -55,9 +63,11 @@ export const KmlGenerator = ({ kmlData, selectedFilters, legendName }: KmlGenera
       <Document>
     `;
 
-    markers.forEach(marker => {
-      const { longitude, latitude, name } = marker;
-      kml += `
+    markers
+      .filter(marker => !removeUnknown || marker.name.toLowerCase() !== "unknown") // <-- filter if enabled
+      .forEach(marker => {
+        const { longitude, latitude, name } = marker;
+        kml += `
         <Placemark>
           <name>${escapeXml(name)}</name>
           <Point>
@@ -65,7 +75,7 @@ export const KmlGenerator = ({ kmlData, selectedFilters, legendName }: KmlGenera
           </Point>
         </Placemark>
       `;
-    });
+      });
 
     kml += `
       </Document>
