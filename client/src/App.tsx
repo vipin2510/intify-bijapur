@@ -19,7 +19,7 @@ const App = () => {
   const [xlsData, setXlsData] = useState<xlsDataType[]>([]);
   const [legend, setLegend] = useState<string>("Name");
   const [showLayer, setShowLayer] = useState<showLayerType>({ marker: true, border: false });
-  const [selectedFilters, setSelectedFilters] = useState<selectedFiltersType>({});
+  const [selectedFilters, setSelectedFilters] = useState<Record<string, (string | Date)[]>>({});
   const [removeUnknown, setRemoveUnknown] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

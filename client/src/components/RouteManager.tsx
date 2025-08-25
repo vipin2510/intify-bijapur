@@ -49,7 +49,7 @@ export const RouteManager: React.FC<RouteManagerProps> = ({
     let previousMarker: { marker: mapboxgl.Marker; date: string } | null = null;
 
     sortedData.forEach((item, index) => {
-      const [longitude, latitude] = convertGRToDecimal(item.GR);
+      const [longitude, latitude] = convertGRToDecimal(item.GR as string);
       coordinates.push([longitude, latitude]);
 
       const formattedDate = new Date(String(item.Date!).split('/').reverse().join('/'))
