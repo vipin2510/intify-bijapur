@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { AutocompleteInput } from "./autocomplete-input";
 import { useOutsideClick } from "@/hooks/use-outside-click";
 import {
   DropdownMenu,
@@ -11,6 +10,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+
+// Types
+// type xlsDataType = Record<string, string | number | Date | null>;
 
 type FiltersProps = {
   data: xlsDataType[];
@@ -42,6 +44,9 @@ export const Filters = ({
   const [selectedFilters, setSelectedFilters] = useState<
     Record<string, (string | Date)[]>
   >(initialSelectedFilters);
+
+  // NEW: Track live text input for each filter
+  const [inputValues, setInputValues] = useState<Record<string, string>>({});
 
   useEffect(() => {
     setInitialSelectedFilters(selectedFilters);
@@ -128,33 +133,17 @@ export const Filters = ({
   const checkFilterIncludes = (label: string) =>
     Object.keys(selectedFilters).includes(label);
 
-  // ✅ Allow partial typing but only add if exact match exists when selecting
-  const handleChange = (
-    value: string | Date,
-    selected: string,
-    suggestions: string[]
-  ) => {
+  const handleChange = (value: string | Date, selected: string) => {
     if (value === "" || value === null) return;
-
-    // Dates are free input
-    if (selected === "startDate" || selected === "endDate") {
-      setSelectedFilters((prev) => ({ ...prev, [selected]: [value] }));
-      return;
-    }
-
-    const valStr = value.toString().toLowerCase();
-    const isExactMatch = suggestions.includes(valStr);
-
-    if (!isExactMatch) {
-      // just typing → don’t add yet
-      return;
-    }
 
     setSelectedFilters((prev) => {
       const currentValues = prev[selected] || [];
       if (currentValues.includes(value)) return prev;
       return { ...prev, [selected]: [...currentValues, value] };
     });
+
+    // reset input field after adding
+    setInputValues((prev) => ({ ...prev, [selected]: "" }));
   };
 
   const handleRemoveValue = (selected: string, value: string | Date) => {
@@ -276,12 +265,18 @@ export const Filters = ({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Filter Inputs */}
       <div className="w-full flex flex-col flex-wrap p-2 gap-2">
         {selectedFilters ? (
           Object.keys(selectedFilters).map((selected) => {
             const suggestions = getSuggestions(selected);
+            const inputValue = inputValues[selected] || "";
+            const filteredSuggestions = suggestions.filter((s) =>
+              s.toLowerCase().includes(inputValue.toLowerCase())
+            );
             return (
-              <div key={selected} className="flex flex-col gap-y-2">
+              <div key={selected} className="flex flex-col gap-y-2 relative">
                 {selected === "startDate" || selected === "endDate" ? (
                   <>
                     <label htmlFor={selected} className="text-sm font-medium">
@@ -295,25 +290,49 @@ export const Filters = ({
                           ?.toString()
                           .split("T")[0] || ""
                       }
-                      onChange={(e) =>
-                        handleChange(e.target.value, selected, suggestions)
-                      }
+                      onChange={(e) => handleChange(e.target.value, selected)}
                       className="border border-gray-300 rounded-md px-3 py-2"
                     />
                   </>
                 ) : (
                   <>
-                    <AutocompleteInput
+                    <label htmlFor={selected} className="text-sm font-medium">
+                      {SpacedNamed(selected)}
+                    </label>
+                    <input
+                      type="text"
                       id={selected}
-                      label={SpacedNamed(selected)}
-                      value=""
-                      onChange={(value) =>
-                        handleChange(value, selected, suggestions)
+                      value={inputValue}
+                      onChange={(e) =>
+                        setInputValues((prev) => ({
+                          ...prev,
+                          [selected]: e.target.value,
+                        }))
                       }
-                      suggestions={suggestions}
-                      colorize={selected === "Name_"}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleChange(inputValue, selected);
+                        }
+                      }}
+                      className="border border-gray-300 rounded-md px-3 py-2"
+                      placeholder="Type to search or add"
                     />
-                    <div className="flex flex-wrap gap-1">
+                    {/* Suggestions dropdown */}
+                    {inputValue && filteredSuggestions.length > 0 && (
+                      <ul className="absolute top-full left-0 w-full bg-white border rounded-md shadow-md max-h-40 overflow-y-auto z-10">
+                        {filteredSuggestions.map((s, idx) => (
+                          <li
+                            key={idx}
+                            className="px-3 py-2 hover:bg-gray-200 cursor-pointer"
+                            onClick={() => handleChange(s, selected)}
+                          >
+                            {s}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <div className="flex flex-wrap gap-1 mt-1">
                       {selectedFilters[selected]?.map((val, idx) => (
                         <span
                           key={idx}
