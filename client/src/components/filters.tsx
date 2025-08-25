@@ -12,16 +12,13 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-// Types
-// type xlsDataType = Record<string, string | number | Date | null>;
-
 type FiltersProps = {
   data: xlsDataType[];
   setData: React.Dispatch<React.SetStateAction<xlsDataType[]>>;
   xlsData: xlsDataType[];
   legend: string;
   setLegend: React.Dispatch<React.SetStateAction<string>>;
-  selectedFilters: Record<string, (string | Date)[]>; // fixed type
+  selectedFilters: Record<string, (string | Date)[]>;
   setSelectedFilters: React.Dispatch<
     React.SetStateAction<Record<string, (string | Date)[]>>
   >;
@@ -42,7 +39,6 @@ export const Filters = ({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useOutsideClick(() => setIsDropdownOpen(false));
 
-  // store filters as arrays of (string | Date)
   const [selectedFilters, setSelectedFilters] = useState<
     Record<string, (string | Date)[]>
   >(initialSelectedFilters);
@@ -132,7 +128,7 @@ export const Filters = ({
   const checkFilterIncludes = (label: string) =>
     Object.keys(selectedFilters).includes(label);
 
-  // only add if valid suggestion
+  // ✅ Allow partial typing but only add if exact match exists when selecting
   const handleChange = (
     value: string | Date,
     selected: string,
@@ -140,13 +136,17 @@ export const Filters = ({
   ) => {
     if (value === "" || value === null) return;
 
-    // validate only from dropdown list (skip for date)
-    if (
-      selected !== "startDate" &&
-      selected !== "endDate" &&
-      !suggestions.includes(value.toString().toLowerCase())
-    ) {
-      toast.warning("Please choose a valid option from dropdown!");
+    // Dates are free input
+    if (selected === "startDate" || selected === "endDate") {
+      setSelectedFilters((prev) => ({ ...prev, [selected]: [value] }));
+      return;
+    }
+
+    const valStr = value.toString().toLowerCase();
+    const isExactMatch = suggestions.includes(valStr);
+
+    if (!isExactMatch) {
+      // just typing → don’t add yet
       return;
     }
 
@@ -186,7 +186,7 @@ export const Filters = ({
     return filteredValues.map((value) =>
       value !== null
         ? isNumericField
-          ? String(value) // normalize numbers to string
+          ? String(value)
           : String(value).toLowerCase()
         : ""
     );
